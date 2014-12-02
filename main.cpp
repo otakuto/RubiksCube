@@ -1,17 +1,10 @@
 #include <iostream>
 #include <array>
+#include "main.hpp"
+#include "RubiksCube.hpp"
+#include "Color.hpp"
 
-enum class Color
-{
-	Red,
-	Green,
-	Blue,
-	White,
-	Orange,
-	Yellow
-};
-
-constexpr char print(Color color)
+/*constexpr char print(Color color)
 {
 	switch (color)
 	{
@@ -32,85 +25,27 @@ constexpr char print(Color color)
 	}
 }
 
-template <int SIZE>
-class RC
-{
-	std::array<std::array<std::array<Color, SIZE>, SIZE>, 6> surface;
-public:
-	constexpr RC()
-	{
-		for (int i = 0; i < surface.size(); ++i)
-		{
-			for (int j = 0; j < SIZE; ++j)
-			{
-				for(int k = 0; k < SIZE; ++k)
-				{
-					surface[i][j][k] = static_cast<Color>(i);
-				}
-			}
-		}
-	}	
-
-	constexpr auto const & Surface()
-	{
-		return surface;
-	}
-	constexpr void rotateX(int index, bool isRight)
-	{
-
-	}
-	constexpr void rotateY(int index, bool isRight)
-	{
-		if ((index == 0) || (index == (SIZE - 1)))
-		{
-			int s = (index == 0) ? 0 : 5;
-			if (isRight)
-			{
-				for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
-				{
-					for (int j = 0; j < SIZE / 2; ++j)
-					{
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - j][i]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - i][SIZE - 1 - j]);
-						std::swap(surface[s][i][j], surface[s][j][SIZE - 1 - i]);
-					}
-				}
-			}
-			else
-			{
-				for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
-				{
-					for (int j = 0; j < SIZE / 2; ++j)
-					{
-						std::swap(surface[s][i][j], surface[s][j][SIZE - 1 - i]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - i][SIZE - 1 - j]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - j][i]);
-					}
-				}
-			}
-		}
-
-		auto l = isRight ? std::array<int, 3>{2, 4, 3} : std::array<int, 3>{3, 4, 2};
-		for (int i : l)
-		{
-			for (int j = 0; j < SIZE; ++j)
-			{
-				std::swap(surface[1][index][j], surface[i][index][j]);
-			}
-		}
-	}
-	constexpr void rotateZ(int index, bool isRight);
-};
-
 int main()
 {
-	RC<5> rc;
-	rc.rotateY(0, false);
+	RubiksCube<7> rc;
 	for (int i = 0; i < 6; ++i)
 	{
-		for (int j = 0; j < 5; ++j)
+		for (int j = 0; j < 7; ++j)
 		{
-			for(int k = 0; k < 5; ++k)
+			for(int k = 0; k < 7; ++k)
+			{
+				std::cout << print(rc.Surface()[i][j][k]) << ' ';
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::endl;
+	}
+	rc.rotate(Axis::Y, 0, false);
+	for (int i = 0; i < 6; ++i)
+	{
+		for (int j = 0; j < 7; ++j)
+		{
+			for(int k = 0; k < 7; ++k)
 			{
 				std::cout << print(rc.Surface()[i][j][k]) << ' ';
 			}
@@ -119,3 +54,101 @@ int main()
 		std::cout << std::endl;
 	}
 }
+*/
+#include <GL/glfw.h>
+#include <GL/glu.h>
+#include <initializer_list>
+#include <vector>
+#include <iostream>
+#include <cmath>
+
+GLdouble vertex[][3] =
+{
+	{1, 1, 1},
+	{1, 1, -1},
+	{1, -1, 1},
+	{1, -1, -1},
+	{-1, 1, 1},
+	{-1, 1, -1},
+	{-1, -1, 1},
+	{-1, -1, -1},
+};
+
+int plane[][4] =
+{
+	{0, 1, 3, 2},
+	{4, 5, 7, 6},
+	{0, 1, 5, 4},
+	{2, 3, 7, 6},
+	{1, 3, 7, 5},
+	{0, 2, 6, 4}
+};
+
+GLubyte color[][3] =
+{
+	{0xFF, 0x00, 0x00},
+	{0x00, 0xFF, 0x00},
+	{0x00, 0x00, 0xFF},
+	{0xFF, 0xFF, 0x00},
+	{0xFF, 0xA0, 0x00},
+	{0xFF, 0xFF, 0xFF}
+};
+
+int main(int argc, char * argv[])
+{
+	RubiksCube<3> rc;
+	
+	glOrtho(-5, 5, -5, 5, -5, 5);
+	glfwInit();
+	glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
+
+	glfwSetWindowSizeCallback([](int w, int h)
+	{
+		glViewport(0, 0, w, h);
+		glLoadIdentity();
+		gluPerspective(90, static_cast<double>(w) / static_cast<double>(h), 1, 100);
+		gluLookAt(5, 5, 5, 0, 0, 0, 0, 1, 0);
+	});
+
+	while (glfwGetWindowParam(GLFW_OPENED))
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		if (glfwGetKey(GLFW_KEY_ENTER))
+		{
+			glRotated(1, 1, 0, 0);
+		}
+		else
+		{
+			glRotated(1, 0, 1, 0);
+		}
+		
+		for (int i = 0; i < 6; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				for (int k = 0; k < 3; ++k)
+				{
+					glPushMatrix();
+					glTranslated(i * 3, j * 3, k * 3);
+					glBegin(GL_QUADS);
+					for (int l = 0; l < 6; ++l)
+					{
+						glColor3ubv(color[static_cast<int>(rc.Surface()[i][j][k])]);
+						for (auto && e : plane[l])
+						{
+							glVertex3dv(vertex[e]);
+						}
+					}
+					glEnd();
+					glPopMatrix();
+				}
+			}
+		}
+		
+		glfwSwapBuffers();
+	}
+
+	glfwTerminate();
+}
+
