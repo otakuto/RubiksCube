@@ -1,6 +1,5 @@
 #include <iostream>
 #include <array>
-#include "main.hpp"
 #include "RubiksCube.hpp"
 #include "Color.hpp"
 
@@ -74,6 +73,14 @@ GLdouble vertex[][3] =
 	{-1, -1, -1},
 };
 
+GLdouble panel[][3] =
+{
+	{1, 0, 1},
+	{3, 0, 1},
+	{3, 0, 3},
+	{1, 0, 3}
+};
+
 int plane[][4] =
 {
 	{0, 1, 3, 2},
@@ -89,9 +96,9 @@ GLubyte color[][3] =
 	{0xFF, 0x00, 0x00},
 	{0x00, 0xFF, 0x00},
 	{0x00, 0x00, 0xFF},
-	{0xFF, 0xFF, 0x00},
+	{0xFF, 0xFF, 0xFF},
 	{0xFF, 0xA0, 0x00},
-	{0xFF, 0xFF, 0xFF}
+	{0xFF, 0xFF, 0x00}
 };
 
 int main(int argc, char * argv[])
@@ -107,7 +114,7 @@ int main(int argc, char * argv[])
 		glViewport(0, 0, w, h);
 		glLoadIdentity();
 		gluPerspective(90, static_cast<double>(w) / static_cast<double>(h), 1, 100);
-		gluLookAt(5, 5, 5, 0, 0, 0, 0, 1, 0);
+		gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
 	});
 
 	while (glfwGetWindowParam(GLFW_OPENED))
@@ -123,32 +130,37 @@ int main(int argc, char * argv[])
 			glRotated(1, 0, 1, 0);
 		}
 		
-		for (int i = 0; i < 6; ++i)
+		auto f = [&](int i)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
 				for (int k = 0; k < 3; ++k)
 				{
 					glPushMatrix();
-					glTranslated(i * 3, j * 3, k * 3);
+					glTranslated(j * 4, 0, k * 4);
+					glColor3ubv(color[static_cast<int>(rc.Surface()[i][j][k])]);
 					glBegin(GL_QUADS);
-					for (int l = 0; l < 6; ++l)
+					for (auto && e : panel)
 					{
-						glColor3ubv(color[static_cast<int>(rc.Surface()[i][j][k])]);
-						for (auto && e : plane[l])
-						{
-							glVertex3dv(vertex[e]);
-						}
+						glVertex3dv(e);
 					}
 					glEnd();
 					glPopMatrix();
 				}
 			}
-		}
-		
+		};
+		f(0);
+		glPushMatrix();
+		glRotated(90, 1, 0, 0);
+		f(1);
+		glPopMatrix();
+		glPushMatrix();
+		glRotated(-90, 0, 0, 1);
+		f(2);
+		glPopMatrix();
+
 		glfwSwapBuffers();
 	}
-
 	glfwTerminate();
 }
 

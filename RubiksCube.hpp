@@ -19,6 +19,8 @@ public:
 					surface[i][j][k] = static_cast<Color>(i);
 				}
 			}
+			//surface[i][0][1] = Color::Yellow;
+			//surface[i][2][1] = Color::White;
 		}
 	}	
 
