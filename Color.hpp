@@ -2,10 +2,10 @@
 
 enum class Color
 {
-	Red,
-	Green,
-	Blue,
 	White,
+	Red,
+	Blue,
+	Green,
 	Orange,
 	Yellow
 };

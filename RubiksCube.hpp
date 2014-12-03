@@ -19,56 +19,60 @@ public:
 					surface[i][j][k] = static_cast<Color>(i);
 				}
 			}
-			//surface[i][0][1] = Color::Yellow;
-			//surface[i][2][1] = Color::White;
 		}
+		surface[0][0][0] = Color::Yellow;
+		surface[5][0][0] = Color::White;
 	}	
 
 	constexpr auto const & Surface()
 	{
 		return surface;
 	}
+private:
+	constexpr void rotate(int surface, bool isPrime)
+	{
+		if (isPrime)
+		{
+			for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
+			{
+				for (int j = 0; j < SIZE / 2; ++j)
+				{
+					std::swap(this->surface[surface][i][j], this->surface[surface][j][SIZE - 1 - i]);
+					std::swap(this->surface[surface][i][j], this->surface[surface][SIZE - 1 - i][SIZE - 1 - j]);
+					std::swap(this->surface[surface][i][j], this->surface[surface][SIZE - 1 - j][i]);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
+			{
+				for (int j = 0; j < SIZE / 2; ++j)
+				{
+					std::swap(this->surface[surface][i][j], this->surface[surface][SIZE - 1 - j][i]);
+					std::swap(this->surface[surface][i][j], this->surface[surface][SIZE - 1 - i][SIZE - 1 - j]);
+					std::swap(this->surface[surface][i][j], this->surface[surface][j][SIZE - 1 - i]);
+				}
+			}
+		}
+	}
 
+public:
 	constexpr void rotate(Axis axis, int index, bool isPrime)
 	{
 		if ((index == 0) || (index == (SIZE - 1)))
 		{
-			int s = [axis, index]()
+			switch (axis)
 			{
-				switch (axis)
-				{
-					case Axis::X:
-						return 0;
-					case Axis::Y:
-						return (index == 0) ? 5 : 0;
-					case Axis::Z:
-						return 2;
-				}
-			}();
-
-			if (isPrime)
-			{
-				for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
-				{
-					for (int j = 0; j < SIZE / 2; ++j)
-					{
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - j][i]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - i][SIZE - 1 - j]);
-						std::swap(surface[s][i][j], surface[s][j][SIZE - 1 - i]);
-					}
-				}
-			}
-			else
-			{
-				for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
-				{
-					for (int j = 0; j < SIZE / 2; ++j)
-					{
-						std::swap(surface[s][i][j], surface[s][j][SIZE - 1 - i]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - i][SIZE - 1 - j]);
-						std::swap(surface[s][i][j], surface[s][SIZE - 1 - j][i]);
-					}
-				}
+				case Axis::X:
+					rotate((index == 0 ? 1 : 4), isPrime);
+				break;
+				case Axis::Y:
+					rotate((index == 0 ? 0 : 5), isPrime);
+				break;
+				case Axis::Z:
+					rotate((index == 0 ? 2 : 3), isPrime);
+				break;
 			}
 		}
 

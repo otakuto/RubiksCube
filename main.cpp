@@ -93,10 +93,10 @@ int plane[][4] =
 
 GLubyte color[][3] =
 {
-	{0xFF, 0x00, 0x00},
-	{0x00, 0xFF, 0x00},
-	{0x00, 0x00, 0xFF},
 	{0xFF, 0xFF, 0xFF},
+	{0xFF, 0x00, 0x00},
+	{0x00, 0x00, 0xFF},
+	{0x00, 0xFF, 0x00},
 	{0xFF, 0xA0, 0x00},
 	{0xFF, 0xFF, 0x00}
 };
@@ -123,13 +123,26 @@ int main(int argc, char * argv[])
 		glEnable(GL_DEPTH_TEST);
 		if (glfwGetKey(GLFW_KEY_ENTER))
 		{
-			glRotated(1, 1, 0, 0);
+			glRotated(1, 0, 1, 0);
 		}
 		else
 		{
-			glRotated(1, 0, 1, 0);
+			//glRotated(1, 0, 1, 0);
 		}
 		
+		static bool b = true;
+		if (glfwGetKey('A'))
+		{
+			if (b)
+			{
+				rc.rotate(Axis::Y, 0, false);
+				b = false;
+			}
+		}
+		else
+		{
+			b = true;
+		}
 		auto f = [&](int i)
 		{
 			for (int j = 0; j < 3; ++j)
@@ -151,14 +164,29 @@ int main(int argc, char * argv[])
 		};
 		f(0);
 		glPushMatrix();
-		glRotated(90, 1, 0, 0);
+		glRotated(90, 0, 1, 0);
+		glRotated(-90, 0, 0, 1);
 		f(1);
 		glPopMatrix();
 		glPushMatrix();
 		glRotated(-90, 0, 0, 1);
 		f(2);
 		glPopMatrix();
-
+		glPushMatrix();
+		glTranslated(12, 0, 0);
+		glRotated(-90, 0, 0, 1);
+		f(3);
+		glPopMatrix();
+		glPushMatrix();
+		glTranslated(0, 0, 12);
+		glRotated(90, 0, 1, 0);
+		glRotated(-90, 0, 0, 1);
+		f(4);
+		glPopMatrix();
+		glPushMatrix();
+		glTranslated(0, -12, 0);
+		f(5);
+		glPopMatrix();
 		glfwSwapBuffers();
 	}
 	glfwTerminate();
