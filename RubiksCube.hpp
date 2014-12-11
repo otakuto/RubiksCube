@@ -76,7 +76,7 @@ public:
 			}
 		}
 
-		auto l = isPrime ? std::array<int, 3>{2, 4, 3} : std::array<int, 3>{3, 4, 2};
+		auto l = isPrime ? std::array<int, 3>({2, 4, 3}) : std::array<int, 3>({3, 4, 2});
 		for (int i : l)
 		{
 			for (int j = 0; j < SIZE; ++j)

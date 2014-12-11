@@ -1,65 +1,9 @@
-#include <iostream>
-#include <array>
-#include "RubiksCube.hpp"
-#include "Color.hpp"
-
-/*constexpr char print(Color color)
-{
-	switch (color)
-	{
-		case Color::Red:
-			return 'R';
-		case Color::Green:
-			return 'G';
-		case Color::Blue:
-			return 'B';
-		case Color::White:
-			return 'W';
-		case Color::Orange:
-			return 'O';
-		case Color::Yellow:
-			return 'Y';
-		default:
-			return '5';
-	}
-}
-
-int main()
-{
-	RubiksCube<7> rc;
-	for (int i = 0; i < 6; ++i)
-	{
-		for (int j = 0; j < 7; ++j)
-		{
-			for(int k = 0; k < 7; ++k)
-			{
-				std::cout << print(rc.Surface()[i][j][k]) << ' ';
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-	}
-	rc.rotate(Axis::Y, 0, false);
-	for (int i = 0; i < 6; ++i)
-	{
-		for (int j = 0; j < 7; ++j)
-		{
-			for(int k = 0; k < 7; ++k)
-			{
-				std::cout << print(rc.Surface()[i][j][k]) << ' ';
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-	}
-}
-*/
 #include <GL/glfw.h>
 #include <GL/glu.h>
-#include <initializer_list>
-#include <vector>
 #include <iostream>
+#include <vector>
 #include <cmath>
+#include "RubiksCube.hpp"
 
 GLdouble vertex[][3] =
 {
@@ -105,7 +49,6 @@ int main(int argc, char * argv[])
 {
 	RubiksCube<3> rc;
 	
-	glOrtho(-5, 5, -5, 5, -5, 5);
 	glfwInit();
 	glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
 
@@ -121,15 +64,28 @@ int main(int argc, char * argv[])
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		if (glfwGetKey(GLFW_KEY_ENTER))
+		glPopMatrix();
+		glPushMatrix();
+
+		static int theta = 0;
+		static int iota = 0;
+		if (glfwGetKey(GLFW_KEY_RIGHT))
 		{
-			glRotated(1, 0, 1, 0);
+			++theta;
 		}
-		else
+		if (glfwGetKey(GLFW_KEY_LEFT))
 		{
-			//glRotated(1, 0, 1, 0);
+			--theta;
 		}
-		
+		if (glfwGetKey(GLFW_KEY_UP))
+		{
+			++iota;
+		}
+		if (glfwGetKey(GLFW_KEY_DOWN))
+		{
+			--iota;
+		}
+
 		static bool b = true;
 		if (glfwGetKey('A'))
 		{
@@ -143,6 +99,10 @@ int main(int argc, char * argv[])
 		{
 			b = true;
 		}
+		//glTranslated(-6, -6, -6);
+		glRotated(theta, 0, 1, 0);
+		glRotated(iota, 1, 0, 0);
+
 		auto f = [&](int i)
 		{
 			for (int j = 0; j < 3; ++j)
