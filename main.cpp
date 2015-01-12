@@ -3,52 +3,64 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <random>
+#include <cctype>
 #include "RubiksCube.hpp"
 
-GLdouble vertex[][3] =
+constexpr GLdouble const vertex[6][4][3] =
 {
-	{1, 1, 1},
-	{1, 1, -1},
-	{1, -1, 1},
-	{1, -1, -1},
-	{-1, 1, 1},
-	{-1, 1, -1},
-	{-1, -1, 1},
-	{-1, -1, -1},
+	{
+		{-2, 1, 1},
+		{-2, 1, -1},
+		{-2, -1, -1},
+		{-2, -1, 1}
+	},
+	{
+		{1, -2, 1},
+		{-1, -2, 1},
+		{-1, -2, -1},
+		{1, -2, -1}
+	},
+	{
+		{1, 1, -2},
+		{1, -1, -2},
+		{-1, -1, -2},
+		{-1, 1, -2}
+	},
+	{
+		{1, 1, 2},
+		{1, -1, 2},
+		{-1, -1, 2},
+		{-1, 1, 2}
+	},
+	{
+		{1, 2, 1},
+		{-1, 2, 1},
+		{-1, 2, -1},
+		{1, 2, -1}
+	},
+	{
+		{2, 1, 1},
+		{2, 1, -1},
+		{2, -1, -1},
+		{2, -1, 1}
+	},
 };
-
-GLdouble panel[][3] =
-{
-	{1, 0, 1},
-	{3, 0, 1},
-	{3, 0, 3},
-	{1, 0, 3}
-};
-
-int plane[][4] =
-{
-	{0, 1, 3, 2},
-	{4, 5, 7, 6},
-	{0, 1, 5, 4},
-	{2, 3, 7, 6},
-	{1, 3, 7, 5},
-	{0, 2, 6, 4}
-};
-
 GLubyte color[][3] =
 {
-	{0xFF, 0xFF, 0xFF},
-	{0xFF, 0x00, 0x00},
-	{0x00, 0x00, 0xFF},
-	{0x00, 0xFF, 0x00},
 	{0xFF, 0xA0, 0x00},
-	{0xFF, 0xFF, 0x00}
+	{0xFF, 0xFF, 0x00},
+	{0x00, 0xFF, 0x00},
+	{0x00, 0x00, 0xFF},
+	{0xFF, 0xFF, 0xFF},
+	{0xFF, 0x00, 0x00}
 };
 
 int main(int argc, char * argv[])
 {
-	RubiksCube<3> rc;
-	
+	constexpr int SIZE = 3;
+	RubiksCube<SIZE> rc;
+
 	glfwInit();
 	glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
 
@@ -56,9 +68,21 @@ int main(int argc, char * argv[])
 	{
 		glViewport(0, 0, w, h);
 		glLoadIdentity();
-		gluPerspective(90, static_cast<double>(w) / static_cast<double>(h), 1, 100);
+		gluPerspective(90, static_cast<double>(w) / static_cast<double>(h), 1, 128);
 		gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
 	});
+
+	auto pa = [&](std::string s)
+	{
+		for (auto i = s.begin(); i != s.end(); ++i)
+		{
+			Axis axis = static_cast<Axis>(std::tolower(*i) - 'x');
+			bool isPrime = std::isupper(*i);
+			++i;
+			int index = *i - '0';
+			rc.rotate(axis, index, isPrime);
+		}
+	};
 
 	while (glfwGetWindowParam(GLFW_OPENED))
 	{
@@ -86,67 +110,90 @@ int main(int argc, char * argv[])
 			--iota;
 		}
 
-		static bool b = true;
-		if (glfwGetKey('A'))
+		static bool key[256] = {};
+		if (glfwGetKey('X'))
 		{
-			if (b)
+			if (!key['X'])
 			{
-				rc.rotate(Axis::Y, 0, false);
-				b = false;
+				rc.rotate(Axis::X, 2, glfwGetKey(GLFW_KEY_LSHIFT));
+				key['X'] = true;
 			}
 		}
 		else
 		{
-			b = true;
+			key['X'] = false;
 		}
-		//glTranslated(-6, -6, -6);
+		if (glfwGetKey('Y'))
+		{
+			if (!key['Y'])
+			{
+				rc.rotate(Axis::Y, 2, glfwGetKey(GLFW_KEY_LSHIFT));
+				key['Y'] = true;
+			}
+		}
+		else
+		{
+			key['Y'] = false;
+		}
+		if (glfwGetKey('Z'))
+		{
+			if (!key['Z'])
+			{
+				rc.rotate(Axis::Z, 2, glfwGetKey(GLFW_KEY_LSHIFT));
+				key['Z'] = true;
+			}
+		}
+		else
+		{
+			key['Z'] = false;
+		}
+		if (glfwGetKey('R'))
+		{
+			if (!key['R'])
+			{
+				//pa("X2Y2Z0x2y1z0");
+				static std::mt19937 engine(std::random_device{}());
+				std::uniform_int_distribution<int> axis(0, 2);
+				std::uniform_int_distribution<int> index(0, SIZE - 1);
+				std::uniform_int_distribution<bool> isPrime(false, true);
+				for (int i = 0; i < 128; ++i)
+				{
+					rc.rotate(static_cast<Axis>(axis(engine)), index(engine), isPrime(engine));
+				}
+				key['R'] = true;
+			}
+		}
+		else
+		{
+			key['R'] = false;
+		}
 		glRotated(theta, 0, 1, 0);
 		glRotated(iota, 1, 0, 0);
+		glTranslated(-4, -4, -4);
 
-		auto f = [&](int i)
+		for (int i = 0; i < SIZE; ++i)
 		{
-			for (int j = 0; j < 3; ++j)
+			for (int j = 0; j < SIZE; ++j)
 			{
-				for (int k = 0; k < 3; ++k)
+				for (int k = 0; k < SIZE; ++k)
 				{
-					glPushMatrix();
-					glTranslated(j * 4, 0, k * 4);
-					glColor3ubv(color[static_cast<int>(rc.Surface()[i][j][k])]);
-					glBegin(GL_QUADS);
-					for (auto && e : panel)
+					for (auto && e : rc.getCube(i, j, k))
 					{
-						glVertex3dv(e);
+						glPushMatrix();
+						glTranslated(i * 4, j * 4, k * 4);
+						glColor3ubv(color[static_cast<int>(e.second)]);
+						glBegin(GL_QUADS);
+						for (auto && e : vertex[static_cast<int>(e.first)])
+						{
+							glVertex3dv(e);
+						}
+						glEnd();
+						glPopMatrix();
 					}
-					glEnd();
-					glPopMatrix();
 				}
 			}
-		};
-		f(0);
-		glPushMatrix();
-		glRotated(90, 0, 1, 0);
-		glRotated(-90, 0, 0, 1);
-		f(1);
-		glPopMatrix();
-		glPushMatrix();
-		glRotated(-90, 0, 0, 1);
-		f(2);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslated(12, 0, 0);
-		glRotated(-90, 0, 0, 1);
-		f(3);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslated(0, 0, 12);
-		glRotated(90, 0, 1, 0);
-		glRotated(-90, 0, 0, 1);
-		f(4);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslated(0, -12, 0);
-		f(5);
-		glPopMatrix();
+		}
+
 		glfwSwapBuffers();
 	}
 	glfwTerminate();
