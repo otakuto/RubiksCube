@@ -82,7 +82,7 @@ public:
 
 	void rotate(Axis axis, int index, bool isPrime)
 	{
-		std::cout << static_cast<int>(axis) << ',' << index << ',' << isPrime << std::endl;
+		//std::cout << static_cast<int>(axis) << ',' << index << ',' << isPrime << std::endl;
 		auto f = [&]() -> std::function<boost::optional<Color &>(int, int, int)>
 		{
 			switch (axis)
@@ -199,5 +199,26 @@ public:
 			g(i);
 		}
 	}
+
+	void solve();
 };
+
+template<>
+void RubiksCube<3>::solve()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			for (int k = 0; k < 3; ++k)
+			{
+				auto c = getCube(i, j, k);
+				if (c.size() == 2)
+				{
+					std::cout << i << ',' << j << ',' << k << std::endl;
+				}
+			}
+		}
+	}
+}
 
