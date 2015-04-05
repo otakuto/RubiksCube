@@ -207,7 +207,6 @@ int main(int argc, char * argv[])
 						if (angle > 0)
 						{
 							std::array<int, 3> wrapper = {i, j, k};
-							{i, j, k}[2];
 							if (wrapper[static_cast<int>(axis)] == index)
 							{
 								glTranslated(((axis == Axis::X) ? 0 : 4), ((axis == Axis::Y) ? 0 : 4), ((axis == Axis::Z) ? 0 : 4));
