@@ -64,7 +64,7 @@ int main()
 	glfwInit();
 	int count;
 	GLFWmonitor ** monitors = glfwGetMonitors(&count);
-	GLFWmonitor * monitor = monitors[1];//glfwGetPrimaryMonitor();
+	GLFWmonitor * monitor = monitors[0];
 	GLFWvidmode const * mode = glfwGetVideoMode(monitor);
 	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
