@@ -1,4 +1,4 @@
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <GL/glu.h>
 #include <iostream>
 #include <vector>
@@ -62,8 +62,10 @@ int main(int argc, char * argv[])
 	RubiksCube<SIZE> rc;
 
 	glfwInit();
-	glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
+	//glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
+    GLFWwindow * window = glfwCreateWindow(200, 200, "0xFFFF", nullptr, nullptr);
 
+	/*
 	glfwSetWindowSizeCallback([](int w, int h)
 	{
 		glViewport(0, 0, w, h);
@@ -71,6 +73,8 @@ int main(int argc, char * argv[])
 		gluPerspective(90, static_cast<double>(w) / static_cast<double>(h), 1, 128);
 		gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
 	});
+	*/
+    glfwMakeContextCurrent(window);
 
 	/*auto pa = [&](std::string s)
 	{
@@ -84,7 +88,8 @@ int main(int argc, char * argv[])
 		}
 	};*/
 
-	while (glfwGetWindowParam(GLFW_OPENED))
+    while(!glfwWindowShouldClose(window))
+	//while (glfwGetWindowParam(GLFW_OPENED))
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
@@ -94,19 +99,19 @@ int main(int argc, char * argv[])
 		//view
 		static int theta = 0;
 		static int iota = 0;
-		if (glfwGetKey(GLFW_KEY_RIGHT))
+		if (glfwGetKey(window, GLFW_KEY_RIGHT))
 		{
 			++theta;
 		}
-		if (glfwGetKey(GLFW_KEY_LEFT))
+		if (glfwGetKey(window, GLFW_KEY_LEFT))
 		{
 			--theta;
 		}
-		if (glfwGetKey(GLFW_KEY_UP))
+		if (glfwGetKey(window, GLFW_KEY_UP))
 		{
 			++iota;
 		}
-		if (glfwGetKey(GLFW_KEY_DOWN))
+		if (glfwGetKey(window, GLFW_KEY_DOWN))
 		{
 			--iota;
 		}
@@ -121,7 +126,7 @@ int main(int argc, char * argv[])
 		static bool key[256] = {};
 		for (int i = 0; i < 256; ++i)
 		{
-			if (glfwGetKey(static_cast<char>(i)))
+			if (glfwGetKey(window, static_cast<char>(i)))
 			{
 				if (!key[i])
 				{
@@ -138,20 +143,20 @@ int main(int argc, char * argv[])
 							break;
 						case 'X':
 							axis = Axis::X;
-							isPrime = glfwGetKey(GLFW_KEY_LSHIFT);
+							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
 							angle = 90;
 							rc.rotate(axis, index, isPrime);
 							break;
 						case 'C':
 							axis = Axis::Y;
-							isPrime = glfwGetKey(GLFW_KEY_LSHIFT);
+							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
 							angle = 90;
 							rc.rotate(axis, index, isPrime);
 							break;
 						case 'Z':
 							axis = Axis::Z;
 							angle = 90;
-							isPrime = glfwGetKey(GLFW_KEY_LSHIFT);
+							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
 							rc.rotate(axis, index, isPrime);
 							break;
 						case 'R':
@@ -229,7 +234,7 @@ int main(int argc, char * argv[])
 			}
 		}
 
-		glfwSwapBuffers();
+		glfwSwapBuffers(window);
 	}
 	glfwTerminate();
 }
