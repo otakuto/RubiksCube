@@ -27,7 +27,7 @@ public:
 				}
 			}
 		}
-	}	
+	}
 
 private:
 	boost::optional<Color &> get(int x, int y, int z)
@@ -92,13 +92,13 @@ public:
 					{
 						return get(x, y, z);
 					};
-	
+
 				case Axis::Y:
 					return [&](int x, int y, int z)
 					{
 						return get(z, x, y);
 					};
-	
+
 				case Axis::Z:
 					return [&](int x, int y, int z)
 					{
@@ -109,19 +109,19 @@ public:
 
 		if ((index == 0) || (index == (SIZE - 1)))
 		{
-			std::array<std::function<void (int, int)>, 3> fl = 
+			std::array<std::function<void (int, int)>, 3> fl =
 			{
 				[&](int i, int j)
 				{
-					std::swap(*f((index != 0) * (SIZE + 1), i + 1, j + 1), *f((index != 0) * (SIZE + 1), j + 1, SIZE - i));
+					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), j + 1, SIZE - i).get());
 				},
 				[&](int i, int j)
 				{
-					std::swap(*f((index != 0) * (SIZE + 1), i + 1, j + 1), *f((index != 0) * (SIZE + 1), SIZE - i, SIZE - j));
+					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), SIZE - i, SIZE - j).get());
 				},
 				[&](int i, int j)
 				{
-					std::swap(*f((index != 0) * (SIZE + 1), i + 1, j + 1), *f((index != 0) * (SIZE + 1), SIZE - j, i + 1));
+					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), SIZE - j, i + 1).get());
 				}
 			};
 			auto g = [&]() -> std::function<void (int, int)>
@@ -156,19 +156,19 @@ public:
 			}
 		}
 
-		std::array<std::function<void (int)>, 3> fl = 
+		std::array<std::function<void (int)>, 3> fl =
 		{
 			[&](int i)
 			{
-				std::swap(*f(index + 1, i + 1, 0), *f(index + 1, 0, SIZE - i));
+				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, 0, SIZE - i).get());
 			},
 			[&](int i)
 			{
-				std::swap(*f(index + 1, i + 1, 0), *f(index + 1, SIZE - i, SIZE + 1));
+				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, SIZE - i, SIZE + 1).get());
 			},
 			[&](int i)
 			{
-				std::swap(*f(index + 1, i + 1, 0), *f(index + 1, SIZE + 1, i + 1));
+				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, SIZE + 1, i + 1).get());
 			}
 		};
 		auto g = [&]() -> std::function<void (int)>

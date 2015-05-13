@@ -63,7 +63,7 @@ int main(int argc, char * argv[])
 
 	glfwInit();
 	//glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
-    GLFWwindow * window = glfwCreateWindow(200, 200, "0xFFFF", nullptr, nullptr);
+    GLFWwindow * window = glfwCreateWindow(640, 200, "0xFFFF", nullptr, nullptr);
 
 	/*
 	glfwSetWindowSizeCallback([](int w, int h)
@@ -95,6 +95,13 @@ int main(int argc, char * argv[])
 		glEnable(GL_DEPTH_TEST);
 		glPopMatrix();
 		glPushMatrix();
+
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
+		glLoadIdentity();
+		gluPerspective(90, static_cast<double>(width) / static_cast<double>(height), 1, 128);
+		gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
 
 		//view
 		static int theta = 0;
@@ -233,8 +240,8 @@ int main(int argc, char * argv[])
 				}
 			}
 		}
-
 		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 	glfwTerminate();
 }
