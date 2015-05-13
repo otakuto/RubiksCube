@@ -56,7 +56,7 @@ GLubyte color[][3] =
 	{0xFF, 0x00, 0x00}
 };
 
-int main(int argc, char * argv[])
+int main()
 {
 	constexpr int SIZE = 3;
 	RubiksCube<SIZE> rc;
