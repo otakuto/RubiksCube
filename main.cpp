@@ -70,7 +70,9 @@ int main()
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", monitor, nullptr);
+	glfwWindowHint(GLFW_SAMPLES, 1);
+	//GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", monitor, nullptr);
+	GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
 	/*auto pa = [&](std::string s)
@@ -89,6 +91,7 @@ int main()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_MULTISAMPLE);
 		glPopMatrix();
 		glPushMatrix();
 
