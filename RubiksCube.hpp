@@ -58,7 +58,7 @@ private:
 	}
 
 public:
-	std::map<Surface, Color> getCube(int x, int y, int z)
+	std::map<Surface, Color> getCube(int x, int y, int z) const
 	{
 		std::map<Surface, Color> map;
 		if ((x == 0) || (x == (SIZE - 1)))
@@ -200,25 +200,47 @@ public:
 		}
 	}
 
-	void solve();
-};
-
-template<>
-void RubiksCube<3>::solve()
-{
-	for (int i = 0; i < 3; ++i)
+	//  x y z
+	//x U B R
+	//y R U B
+	//z B R U
+	void solve()
 	{
-		for (int j = 0; j < 3; ++j)
+		auto target = Color::White;
+
+		while ([&]()
 		{
-			for (int k = 0; k < 3; ++k)
+			for (int i = 0; i < SIZE; ++i)
 			{
-				auto c = getCube(i, j, k);
-				if (c.size() == 2)
+				for (int j = 0; j < SIZE; ++j)
 				{
-					std::cout << i << ',' << j << ',' << k << std::endl;
+					for (int k = 0; k < SIZE; ++k)
+					{
+						auto c = getCube(i, j, k);
+						if (c.size() == 1)
+						{
+							for (auto && e : c)
+							{
+								std::cout << i << "," << j << "," << k << ":" << static_cast<int>(std::get<0>(e)) << "," << static_cast<int>(std::get<1>(e)) << std::endl;
+								auto color = std::get<1>(e);
+								if (color == target)
+								{
+									auto surface = std::get<0>(e);
+									if (surface == Surface::Front)
+									{
+										rotate(Axis::X, i, true);
+										rotate(Axis::Y, SIZE - 1, true);
+										rotate(Axis::X, i, false);
+										return true;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
-		}
+			return false;
+		}());
 	}
-}
+};
 

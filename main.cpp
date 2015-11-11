@@ -5,61 +5,13 @@
 #include <cmath>
 #include <random>
 #include <cctype>
-#include "RubiksCube.hpp"
-
-constexpr GLdouble const vertex[6][4][3] =
-{
-	{
-		{-2, 1, 1},
-		{-2, 1, -1},
-		{-2, -1, -1},
-		{-2, -1, 1}
-	},
-	{
-		{1, -2, 1},
-		{-1, -2, 1},
-		{-1, -2, -1},
-		{1, -2, -1}
-	},
-	{
-		{1, 1, -2},
-		{1, -1, -2},
-		{-1, -1, -2},
-		{-1, 1, -2}
-	},
-	{
-		{1, 1, 2},
-		{1, -1, 2},
-		{-1, -1, 2},
-		{-1, 1, 2}
-	},
-	{
-		{1, 2, 1},
-		{-1, 2, 1},
-		{-1, 2, -1},
-		{1, 2, -1}
-	},
-	{
-		{2, 1, 1},
-		{2, 1, -1},
-		{2, -1, -1},
-		{2, -1, 1}
-	},
-};
-GLubyte color[][3] =
-{
-	{0xFF, 0xA0, 0x00},
-	{0xFF, 0xFF, 0x00},
-	{0x00, 0xFF, 0x00},
-	{0x00, 0x00, 0xFF},
-	{0xFF, 0xFF, 0xFF},
-	{0xFF, 0x00, 0x00}
-};
+#include "RubiksCubeController.hpp"
 
 int main()
 {
-	constexpr int SIZE = 3;
+	constexpr int SIZE = 4;
 	RubiksCube<SIZE> rc;
+	RubiksCubeController<SIZE> rcc;
 
 	glfwInit();
 	int count;
@@ -70,7 +22,6 @@ int main()
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	glfwWindowHint(GLFW_SAMPLES, 1);
 	//GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", monitor, nullptr);
 	GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", nullptr, nullptr);
     glfwMakeContextCurrent(window);
@@ -91,8 +42,6 @@ int main()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_MULTISAMPLE);
-		glPopMatrix();
 		glPushMatrix();
 
 		//window size chagne
@@ -101,7 +50,7 @@ int main()
 		glViewport(0, 0, width, height);
 		glLoadIdentity();
 		gluPerspective(90, static_cast<double>(width) / static_cast<double>(height), 1, 128);
-		gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
+		gluLookAt(30, 30, 30, 0, 0, 0, 0, 1, 0);
 
 		//view
 		static int theta = 0;
@@ -123,13 +72,8 @@ int main()
 			--iota;
 		}
 
-		//animation
 		static int index = 0;
-		static Axis axis = {};
-		static double angle = 0;
-		static bool isPrime = {};
 
-		//key
 		static bool key[256] = {};
 		for (int i = 0; i < 256; ++i)
 		{
@@ -149,22 +93,13 @@ int main()
 							index = 2;
 							break;
 						case 'X':
-							axis = Axis::X;
-							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-							angle = 90;
-							rc.rotate(axis, index, isPrime);
+							rcc.rotate(Axis::X, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'C':
-							axis = Axis::Y;
-							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-							angle = 90;
-							rc.rotate(axis, index, isPrime);
+							rcc.rotate(Axis::Y, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'Z':
-							axis = Axis::Z;
-							angle = 90;
-							isPrime = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-							rc.rotate(axis, index, isPrime);
+							rcc.rotate(Axis::Z, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'R':
 						{
@@ -175,12 +110,12 @@ int main()
 							std::uniform_int_distribution<bool> isPrime(false, true);
 							for (int i = 0; i < 128; ++i)
 							{
-								rc.rotate(static_cast<Axis>(axis(engine)), index(engine), isPrime(engine));
+								rcc.rotate(static_cast<Axis>(axis(engine)), index(engine), isPrime(engine));
 							}
 							break;
 						}
 						case 'S':
-							rc.solve();
+							//rcc.solve();
 							break;
 						default:
 							break;
@@ -193,53 +128,16 @@ int main()
 				key[i] = false;
 			}
 		}
-
-		//animation
-		if (angle > 0)
-		{
-			angle -= 10;
-		}
 		//view
 		glRotated(theta, 0, 1, 0);
 		glRotated(iota, 1, 0, 0);
 		//centralize
-		glTranslated(-4, -4, -4);
+		glTranslated(-(SIZE - 1) * 2, -(SIZE - 1) * 2, -(SIZE - 1) * 2);
 
-		for (int i = 0; i < SIZE; ++i)
-		{
-			for (int j = 0; j < SIZE; ++j)
-			{
-				for (int k = 0; k < SIZE; ++k)
-				{
-					for (auto && e : rc.getCube(i, j, k))
-					{
-						glPushMatrix();
+		rcc.run();
+		rcc.draw();
 
-						//animation
-						if (angle > 0)
-						{
-							std::array<int, 3> wrapper = {i, j, k};
-							if (wrapper[static_cast<int>(axis)] == index)
-							{
-								glTranslated(((axis == Axis::X) ? 0 : 4), ((axis == Axis::Y) ? 0 : 4), ((axis == Axis::Z) ? 0 : 4));
-								glRotated(isPrime ? -angle : angle, ((axis == Axis::X) ? 1 : 0), ((axis == Axis::Y) ? 1 : 0), ((axis == Axis::Z) ? 1 : 0));
-								glTranslated(((axis == Axis::X) ? 0 : -4), ((axis == Axis::Y) ? 0 : -4), ((axis == Axis::Z) ? 0 : -4));
-							}
-						}
-
-						glTranslated(i * 4, j * 4, k * 4);
-						glColor3ubv(color[static_cast<int>(e.second)]);
-						glBegin(GL_QUADS);
-						for (auto && e : vertex[static_cast<int>(e.first)])
-						{
-							glVertex3dv(e);
-						}
-						glEnd();
-						glPopMatrix();
-					}
-				}
-			}
-		}
+		glPopMatrix();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
