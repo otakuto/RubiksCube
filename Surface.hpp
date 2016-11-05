@@ -1,5 +1,4 @@
 #pragma once
-#include <cmath>
 
 enum class Surface
 {
@@ -11,8 +10,8 @@ enum class Surface
 	Right
 };
 
-constexpr Surface inverse(Surface && surface)
+constexpr Surface inverse(Surface surface)
 {
-	return static_cast<Surface>(std::abs(static_cast<int>(surface) - 5));
+	return static_cast<Surface>(5 - static_cast<int>(surface));
 }
 
