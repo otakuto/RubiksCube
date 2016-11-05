@@ -11,7 +11,7 @@ enum class Surface
 	Right
 };
 
-Surface inside(Surface && surface)
+constexpr Surface inverse(Surface && surface)
 {
 	return static_cast<Surface>(std::abs(static_cast<int>(surface) - 5));
 }
