@@ -1,13 +1,13 @@
 #pragma once
 
-enum class Surface
+enum class Surface : int
 {
-	Left,
-	Down,
-	Back,
-	Front,
+	Right,
 	Up,
-	Right
+	Front,
+	Back,
+	Down,
+	Left
 };
 
 constexpr Surface inverse(Surface surface)

@@ -2,11 +2,11 @@
 
 enum class Color
 {
-	Orange,
-	Yellow,
-	Green,
-	Blue,
-	White,
 	Red,
+	White,
+	Blue,
+	Green,
+	Yellow,
+	Orange
 };
 
