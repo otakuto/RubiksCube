@@ -10,7 +10,6 @@
 int main()
 {
 	constexpr int SIZE = 4;
-	RubiksCube<SIZE> rc;
 	RubiksCubeController<SIZE> rcc;
 
 	glfwInit();
@@ -25,18 +24,6 @@ int main()
 	//GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", monitor, nullptr);
 	GLFWwindow * window = glfwCreateWindow(mode->width, mode->height, "RubiksCube", nullptr, nullptr);
     glfwMakeContextCurrent(window);
-
-	/*auto pa = [&](std::string s)
-	{
-		for (auto i = s.begin(); i != s.end(); ++i)
-		{
-			Axis axis = static_cast<Axis>(std::tolower(*i) - 'x');
-			bool isPrime = std::isupper(*i);
-			++i;
-			int index = *i - '0';
-			rc.rotate(axis, index, isPrime);
-		}
-	};*/
 
     while(!glfwWindowShouldClose(window))
 	{
