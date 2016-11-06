@@ -80,30 +80,28 @@ int main()
 							index = 2;
 							break;
 						case 'X':
-							rcc.rotate(Axis::X, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
+							rcc.rotate({{1,0,0}}, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'C':
-							rcc.rotate(Axis::Y, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
+							rcc.rotate({{0,1,0}}, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'Z':
-							rcc.rotate(Axis::Z, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
+							rcc.rotate({{0,0,1}}, index, glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
 							break;
 						case 'R':
 						{
-							//pa("X2Y2Z0x2y1z0");
 							static std::mt19937 engine(std::random_device{}());
 							std::uniform_int_distribution<int> axis(0, 2);
 							std::uniform_int_distribution<int> index(0, SIZE - 1);
 							std::uniform_int_distribution<bool> isPrime(false, true);
 							for (int i = 0; i < 128; ++i)
 							{
-								rcc.rotate(static_cast<Axis>(axis(engine)), index(engine), isPrime(engine));
+								std::array<int, 3> a = {};
+								a[axis(engine)] = 1;
+								rcc.rotate(a, index(engine), isPrime(engine));
 							}
 							break;
 						}
-						case 'S':
-							//rcc.solve();
-							break;
 						default:
 							break;
 					}

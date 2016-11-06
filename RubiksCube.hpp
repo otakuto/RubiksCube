@@ -10,14 +10,54 @@
 #include "Axis.hpp"
 #include "Surface.hpp"
 
+template<typename T>
+T rotateRight(T t)
+{
+	std::rotate(t.rbegin(), t.rbegin() + 1, t.rend());
+	return t;
+}
+
+template<typename T>
+T rotateLeft(T t)
+{
+	std::rotate(t.begin(), t.begin() + 1, t.end());
+	return t;
+}
+
+template<typename F, typename X>
+constexpr auto nest(F f, int n, X x) -> decltype(f(x))
+{
+	for (int i = 0; i < n; ++i)
+	{
+		x = f(x);
+	}
+	return x;
+};
+
+template<typename T>
+boost::optional<int> axisToInt(T axis)
+{
+	for (int i = 0; i < axis.size(); ++i)
+	{
+		if (axis[i])
+		{
+			return i;
+		}
+	}
+	return boost::none;
+};
+
 template <int SIZE>
 class RubiksCube
 {
-	std::array<std::array<std::array<Color, SIZE>, SIZE>, 6> surface;
+public:
+	constexpr static int const SURFACE_LENGTH = 6;
+private:
+	std::array<std::array<std::array<Color, SIZE>, SIZE>, SURFACE_LENGTH> surface;
 public:
 	constexpr RubiksCube()
 	{
-		for (int i = 0; i < surface.size(); ++i)
+		for (int i = 0; i < SURFACE_LENGTH; ++i)
 		{
 			for (int j = 0; j < SIZE; ++j)
 			{
@@ -29,218 +69,75 @@ public:
 		}
 	}
 
-private:
-	boost::optional<Color &> get(int x, int y, int z)
-	{
-		if ((x == 0) || (x == (SIZE + 1)))
-		{
-			if ((1 <= y) && (y <= SIZE) && (1 <= z) && (z <= SIZE))
-			{
-				return surface[static_cast<int>(x ? Surface::Right : Surface::Left)][y - 1][z - 1];
-			}
-		}
-		else if ((y == 0) || (y == (SIZE + 1)))
-		{
-			if ((1 <= z) && (z <= SIZE) && (1 <= x) && (x <= SIZE))
-			{
-				return surface[static_cast<int>(y ? Surface::Up : Surface::Down)][z - 1][x - 1];
-			}
-		}
-		else if ((z == 0) || (z == (SIZE + 1)))
-		{
-			if ((1 <= x) && (x <= SIZE) && (1 <= y) && (y <= SIZE))
-			{
-				return surface[static_cast<int>(z ? Surface::Front : Surface::Back)][x - 1][y - 1];
-			}
-		}
-
-		return boost::none;
-	}
-
 public:
-	std::map<Surface, Color> getCube(int x, int y, int z) const
+	std::map<Surface, Color> getCube(std::array<int, 3> p) const
 	{
 		std::map<Surface, Color> map;
-		if ((x == 0) || (x == (SIZE - 1)))
+		for (auto e : {Surface::Right, Surface::Up, Surface::Front})
 		{
-			Surface s = x ? Surface::Right : Surface::Left;
-			map.emplace(s, surface[static_cast<int>(s)][y][z]);
-		}
-		if ((y == 0) || (y == (SIZE - 1)))
-		{
-			Surface s = y ? Surface::Up : Surface::Down;
-			map.emplace(s, surface[static_cast<int>(s)][z][x]);
-		}
-		if ((z == 0) || (z == (SIZE - 1)))
-		{
-			Surface s = z ? Surface::Front : Surface::Back;
-			map.emplace(s, surface[static_cast<int>(s)][x][y]);
+			auto q = nest(rotateLeft<decltype(p)>, static_cast<int>(e), p);
+			if ((std::get<0>(q) == 0) || (std::get<0>(q) == (SIZE - 1)))
+			{
+				Surface s = std::get<0>(q) ? e : inverse(e);
+				map.emplace(s, surface[static_cast<int>(s)][std::get<1>(q)][std::get<2>(q)]);
+			}
 		}
 
 		return map;
 	}
 
-	void rotate(Axis axis, int index, bool isPrime)
+	void rotate(std::array<int, 3> axis, int index, bool isPrime)
 	{
-		//std::cout << static_cast<int>(axis) << ',' << index << ',' << isPrime << std::endl;
-		auto f = [&]() -> std::function<boost::optional<Color &>(int, int, int)>
-		{
-			switch (axis)
-			{
-				case Axis::X:
-					return [&](int x, int y, int z)
-					{
-						return get(x, y, z);
-					};
-
-				case Axis::Y:
-					return [&](int x, int y, int z)
-					{
-						return get(z, x, y);
-					};
-
-				case Axis::Z:
-					return [&](int x, int y, int z)
-					{
-						return get(y, z, x);
-					};
-			}
-		}();
-
+		auto s = surface;
 		if ((index == 0) || (index == (SIZE - 1)))
 		{
-			std::array<std::function<void (int, int)>, 3> fl =
-			{
-				[&](int i, int j)
-				{
-					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), j + 1, SIZE - i).get());
-				},
-				[&](int i, int j)
-				{
-					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), SIZE - i, SIZE - j).get());
-				},
-				[&](int i, int j)
-				{
-					std::swap(f((index != 0) * (SIZE + 1), i + 1, j + 1).get(), f((index != 0) * (SIZE + 1), SIZE - j, i + 1).get());
-				}
-			};
-			auto g = [&]() -> std::function<void (int, int)>
-			{
-				if (isPrime)
-				{
-					return [&](int i, int j)
-					{
-						std::for_each(fl.rbegin(), fl.rend(), [&](auto && f)
-						{
-							f(i, j);
-						});
-					};
-				}
-				else
-				{
-					return [&](int i, int j)
-					{
-						std::for_each(fl.begin(), fl.end(), [&](auto && f)
-						{
-							f(i, j);
-						});
-					};
-				}
-			}();
-			for (int i = 0; i < ((SIZE / 2) + (SIZE % 2)); ++i)
-			{
-				for (int j = 0; j < SIZE / 2; ++j)
-				{
-					g(i, j);
-				}
-			}
-		}
+			auto e = (index == 0) ? inverse(static_cast<Surface>(axisToInt(axis).get())) : static_cast<Surface>(axisToInt(axis).get());
 
-		std::array<std::function<void (int)>, 3> fl =
-		{
-			[&](int i)
-			{
-				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, 0, SIZE - i).get());
-			},
-			[&](int i)
-			{
-				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, SIZE - i, SIZE + 1).get());
-			},
-			[&](int i)
-			{
-				std::swap(f(index + 1, i + 1, 0).get(), f(index + 1, SIZE + 1, i + 1).get());
-			}
-		};
-		auto g = [&]() -> std::function<void (int)>
-		{
 			if (isPrime)
 			{
-				return [&](int i)
+				for (int i = 0; i < SIZE; ++i)
 				{
-					std::for_each(fl.rbegin(), fl.rend(), [&](auto && f)
+					for (int j = 0; j < SIZE; ++j)
 					{
-						f(i);
-					});
-				};
-			}
-			else
-			{
-				return [&](int i)
-				{
-					std::for_each(fl.begin(), fl.end(), [&](auto && f)
-					{
-						f(i);
-					});
-				};
-			}
-		}();
-		for (int i = 0; i < SIZE; ++i)
-		{
-			g(i);
-		}
-	}
-
-	//  x y z
-	//x U B R
-	//y R U B
-	//z B R U
-	void solve()
-	{
-		auto target = Color::White;
-
-		while ([&]()
-		{
-			for (int i = 0; i < SIZE; ++i)
-			{
-				for (int j = 0; j < SIZE; ++j)
-				{
-					for (int k = 0; k < SIZE; ++k)
-					{
-						auto c = getCube(i, j, k);
-						if (c.size() == 1)
-						{
-							for (auto && e : c)
-							{
-								std::cout << i << "," << j << "," << k << ":" << static_cast<int>(std::get<0>(e)) << "," << static_cast<int>(std::get<1>(e)) << std::endl;
-								auto color = std::get<1>(e);
-								if (color == target)
-								{
-									auto surface = std::get<0>(e);
-									if (surface == Surface::Front)
-									{
-										rotate(Axis::X, i, true);
-										rotate(Axis::Y, SIZE - 1, true);
-										rotate(Axis::X, i, false);
-										return true;
-									}
-								}
-							}
-						}
+						s[static_cast<int>(e)][i][j] = surface[static_cast<int>(e)][j][(SIZE - 1) - i];
 					}
 				}
 			}
-			return false;
-		}());
+			else
+			{
+				for (int i = 0; i < SIZE; ++i)
+				{
+					for (int j = 0; j < SIZE; ++j)
+					{
+						s[static_cast<int>(e)][i][j] = surface[static_cast<int>(e)][(SIZE - 1) - j][i];
+					}
+				}
+			}
+		}
+
+		//side surface rotate
+		for (int i = 0; i < SURFACE_LENGTH - 2; ++i)
+		{
+			auto rotateAxis = isPrime ? rotateRight<std::array<int, 3>> : rotateLeft<std::array<int, 3>>;
+			auto si = nest(inverse, i / 2, static_cast<Surface>(axisToInt(nest(rotateAxis, (i % 2) + 1, axis)).get()));
+			auto di = nest(inverse, (i + 1) / 2, static_cast<Surface>(axisToInt(nest(rotateAxis, ((i + 1) % 2) + 1, axis)).get()));
+			if (i % 2 == isPrime)
+			{
+				for (int j = 0; j < SIZE; ++j)
+				{
+					s[static_cast<int>(di)][j][index] = surface[static_cast<int>(si)][index][j];
+				}
+			}
+			else
+			{
+				for (int j = 0; j < SIZE; ++j)
+				{
+					s[static_cast<int>(di)][index][j] = surface[static_cast<int>(si)][(SIZE - 1) - j][index];
+				}
+			}
+		}
+
+		surface = s;
 	}
 };
 

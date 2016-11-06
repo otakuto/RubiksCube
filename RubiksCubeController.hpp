@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include "RubiksCube.hpp"
 
 template <int SIZE>
@@ -21,10 +22,10 @@ public:
 	{
 	}
 
-	void rotate(Axis axis, int index, bool isPrime)
+	void rotate(std::array<int, 3> axis, int index, bool isPrime)
 	{
 		rubiksCube.rotate(axis, index, isPrime);
-		this->axis = axis;
+		this->axis = static_cast<Axis>(axisToInt(axis).get());
 		this->index = index;
 		this->isPrime = isPrime;
 		angle = 90;
@@ -95,30 +96,33 @@ public:
 			{
 				for (int k = 0; k < SIZE; ++k)
 				{
-					for (auto && e : rubiksCube.getCube(i, j, k))
+					if ((i == 0) || (i == SIZE - 1) || (j == 0) || (j == SIZE - 1) || (k == 0) || (k == SIZE - 1))
 					{
-						glPushMatrix();
-
-						if (angle > 0)
+						for (auto && e : rubiksCube.getCube({{i, j, k}}))
 						{
-							std::array<int, 3> wrapper = {i, j, k};
-							if (wrapper[static_cast<int>(axis)] == index)
+							glPushMatrix();
+
+							if (angle > 0)
 							{
-								glTranslated(((axis == Axis::X) ? 0 : l), ((axis == Axis::Y) ? 0 : l), ((axis == Axis::Z) ? 0 : l));
-								glRotated(isPrime ? -angle : angle, ((axis == Axis::X) ? 1 : 0), ((axis == Axis::Y) ? 1 : 0), ((axis == Axis::Z) ? 1 : 0));
-								glTranslated(((axis == Axis::X) ? 0 : -l), ((axis == Axis::Y) ? 0 : -l), ((axis == Axis::Z) ? 0 : -l));
+								std::array<int, 3> wrapper = {{i, j, k}};
+								if (wrapper[static_cast<int>(axis)] == index)
+								{
+									glTranslated(((axis == Axis::X) ? 0 : l), ((axis == Axis::Y) ? 0 : l), ((axis == Axis::Z) ? 0 : l));
+									glRotated(isPrime ? -angle : angle, ((axis == Axis::X) ? 1 : 0), ((axis == Axis::Y) ? 1 : 0), ((axis == Axis::Z) ? 1 : 0));
+									glTranslated(((axis == Axis::X) ? 0 : -l), ((axis == Axis::Y) ? 0 : -l), ((axis == Axis::Z) ? 0 : -l));
+								}
 							}
-						}
 
-						glTranslated(i * edgeLength, j * edgeLength, k * edgeLength);
-						glColor3ubv(color[static_cast<int>(e.second)]);
-						glBegin(GL_QUADS);
-						for (auto && e : vertex[static_cast<int>(e.first)])
-						{
-							glVertex3dv(e);
+							glTranslated(i * edgeLength, j * edgeLength, k * edgeLength);
+							glColor3ubv(color[static_cast<int>(e.second)]);
+							glBegin(GL_QUADS);
+							for (auto && e : vertex[static_cast<int>(e.first)])
+							{
+								glVertex3dv(e);
+							}
+							glEnd();
+							glPopMatrix();
 						}
-						glEnd();
-						glPopMatrix();
 					}
 				}
 			}
